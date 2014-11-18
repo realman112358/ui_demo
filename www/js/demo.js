@@ -35,6 +35,7 @@ function CommonFunc(){
             read:read,
             write:write
         };
+
         var _fs;
         function fail(error){
             console.log("failed" + error.code)
@@ -120,6 +121,7 @@ function CommonFunc(){
 }
 //cordova func
 function onDeviceReady() {
+    console.log("device ready");
     var CF = new CommonFunc();
     CF.fileHelper.init(function(){
             console.log("fs init");
@@ -157,6 +159,7 @@ function onDeviceReady() {
 var App = (function(){
     var pages = {};
     var run = function(){
+        console.log("app run");
         $.each(pages,function(k,v){
             var sectionId = '#'+k+'_section';
             $('body').delegate(sectionId,'pageinit',function(){
@@ -172,7 +175,8 @@ var App = (function(){
             });
         });
         J.Transition.add('flip','slideLeftOut','flipOut','slideRightOut','flipIn');
-        Jingle.launch();
+        //basehtml path is demohtml, override default html/
+        Jingle.launch({basePagePath:'demohtml/'});
     };
     var page = function(id,factory){
         return ((id && factory)?_addPage:_getPage).call(this,id,factory);
@@ -307,10 +311,49 @@ App.page('sqltest', function(){
 
     }
 });
-$(function(){
-    App.run();
-});
+App.page('chart',function(){
+    var pause = false,$chart;
+    var datasets = [65,59,90,81,56,55,40,20,3,20,10,60];
+    var data = {
+        labels : ["一月","二月","三月","四月","五月","六月","七月",'八月','九月','十月','十一月','十二月'],
+        datasets : [
+            {
+                name : '体温',
+                color : "#72caed",
+                pointColor : "#95A5A6",
+                pointBorderColor : "#fff",
+                data : datasets
+            }
+        ]
+    }
 
+    this.init = function(){
+        //重新设置canvas大小
+        $chart = $('#dynamic_line_canvas');
+        var wh = App.calcChartOffset();
+        $chart.attr('width',wh.width).attr('height',wh.height-30);
+        var line = new JChart.Line(data,{
+            id : 'dynamic_line_canvas'
+        });
+        line.draw();
+        refreshChart(line);
+        $('#pause_dynamic_chart').on('tap',function(){
+            pause = !pause;
+            $(this).text(pause?'继续':'暂停');
+        })
+    }
+
+    function refreshChart(chart){
+        setTimeout(function(){
+            if(!pause){
+                datasets.shift();
+                datasets.push(Math.floor(Math.random()*100));
+                chart.load(data);
+            }
+            refreshChart(chart);
+        },1000);
+    }
+});
 
 
 

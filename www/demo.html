@@ -30,7 +30,7 @@
             <div style="padding:10px 0 20px">
                 <ul class="list inset demo-list">
                     <li data-icon="next" data-selected="selected">
-                        <span class="icon newspaper"></span>
+                        <span class="icon signup"></span>
                         <a href="#todo_section" data-target="section">Todo List</a>
                     </li>
                     <li data-icon="next" data-selected="selected">
@@ -38,8 +38,12 @@
                         <a href="#rss_section" data-target="section">rss</a>
                     </li>
                     <li data-icon="next" data-selected="selected">
-                        <span class="icon newspaper"></span>
+                        <span class="icon database"></span>
                         <a href="#sqltest_section" data-target="section">sql test</a>
+                    </li>
+                    <li data-icon="next" data-selected="selected">
+                        <span class="icon stats"></span>
+                        <a href="#chart_section" data-target="section">chart</a>
                     </li>
                     <li>hi</li>
                     <li>hi</li>
@@ -52,8 +56,9 @@
         </article>
     </section>
 </div>
+<!--web 调试可以注释掉,不然会有很多alert!-->
 <!--cordova-->
-<script type="text/javascript" src="cordova.js"></script>
+<script id="preload_script" type="text/javascript" src="cordova.js"></script>
 <!--cordova-->
 <!-- lib -->
 <script type="text/javascript" src="js/lib/zepto.js"></script>
