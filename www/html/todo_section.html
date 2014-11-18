@@ -1,0 +1,39 @@
+<section id="todo_section" data-transition="slideUp">
+    <header>
+        <nav class="left">
+            <a href="#"  data-icon="previous" data-target="back">返回</a>
+        </nav>
+        <h1 class="title">todo list</h1>
+    </header>
+    <footer>
+        <a  href="#todo_show_article" data-target="article" data-icon="list" class="active">Show</a>
+        <a  href="#todo_add_article" data-target="article" data-icon="plus">Add</a>
+        <a  href="#" id="layout-btn-getmore"  data-icon="ellipsis">more</a>
+    </footer>
+    <article class="" id="todo_add_article">
+        <div class="indented">
+            <form>
+                <input id="todo_title" type="text" placeholder="title">
+                <input id="todo_detail" type="text" placeholder="details">
+                <a class="button block" data-icon="cogs" id="todo_save">save</a>
+            </form>
+        </div>
+    </article>
+    <article id="todo_show_article" data-scroll="true" class="active">
+        <div class="scrollWrapper">
+            <ul class="list inset demo-list" id="todo_data">
+            </ul>
+        </div>
+    </article>
+    <script type="text/html" id="tpl_todo">
+        {each $data}
+        <li data-icon="next" data-selected="selected">
+            <span class="icon newspaper"></span>
+            <a href="#"  data-target="section">
+                <strong>{$value.title}</strong>
+                <p>{$value.detail}</p>
+            </a>
+        </li>
+        {/each}
+    </script>
+</section>

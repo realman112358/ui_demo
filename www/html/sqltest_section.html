@@ -1,0 +1,22 @@
+<section id="sqltest_section" data-transition="slideUp">
+    <header>
+        <nav class="left">
+            <a href="#"  data-icon="previous" data-target="back">返回</a>
+        </nav>
+        <h1 class="title">sql test</h1>
+    </header>
+    <footer>
+    </footer>
+    <article id="sqltest_article" data-scroll="true" class="active">
+            <ul class="list" id="sqltest_data">
+            </ul>
+    </article>
+    <script type="text/html" id="tpl_sqltest">
+        {each $data as $value}
+        <li>
+            <p>{$value.id}</p>
+            <p>{$value.name}</p>
+        </li>
+        {/each}
+    </script>
+</section>

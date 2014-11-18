@@ -1,0 +1,29 @@
+<section id="rss_section" data-transition="slideUp">
+    <header>
+        <nav class="left">
+            <a href="#"  data-icon="previous" data-target="back">返回</a>
+        </nav>
+        <h1 class="title">rss</h1>
+    </header>
+    <footer>
+        <a  href="#rss_channel1_article" data-target="article" data-icon="book" class="active">cnode</a>
+        <a  href="#rss_channel2_article" data-target="article" data-icon="book">channel2</a>
+    </footer>
+    <article id="rss_channel1_article" data-scroll="true" class="active">
+        <div class="scrollWrapper">
+            <ul class="list inset demo-list" id="rss_channel1_data">
+            </ul>
+        </div>
+    </article>
+    <script type="text/html" id="tpl_rss">
+        {each $data as $value $i}
+        <li data-icon="next" data-selected="selected">
+            <span class="icon newspaper"></span>
+            <a href="#detail_section?data={$i}"  data-target="section">
+                <strong>{$value.title}</strong>
+                <p>{$value.link}</p>
+            </a>
+        </li>
+        {/each}
+    </script>
+</section>
