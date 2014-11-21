@@ -8,11 +8,22 @@
             <a href="#" class="button" id="pause_dynamic_chart">暂停</a>
         </nav>
     </header>
-    <article class="active">
-        <div class="chartTitle">体温</div>
-        <canvas id="dynamic_line_canvas" width="400" height="400"></canvas>
+    <footer>
+        <a  href="#chart_day_article" data-target="article" data-icon="plus" class="active">天</a>
+        <a  href="#chart_week_article" data-target="article" data-icon="plus">周</a>
+        <a  href="#chart_month_article" data-target="article" data-icon="list" class="">月</a>
+    </footer>
+    <article class="active" id="chart_day_article" data-scroll="true">
+        <div id="calendar" style="margin:10px;"></div>
+        <canvas id="dynamic_line_canvas" width="0" height="0"></canvas>
         <div class="legend">
             <div data-icon="stop" style="color: #72caed">体温</div>
         </div>
+    </article>
+    <article class="" id="chart_month_article"  data-scroll="true">
+        month
+    </article>
+    <article class="" id="chart_week_article"  data-scroll="true">
+        week
     </article>
 </section>

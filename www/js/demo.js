@@ -4,11 +4,20 @@
  */
 document.addEventListener('deviceready', onDeviceReady, false);
 //cordova func
+function log(){
+    //notice,here console.log's this is console,if this is undefined,will invoke a exception
+    console.log.apply(console, arguments);
+}
 function CommonFunc(){
     return {
         testSql:testSqlLite,
-        fileHelper:new FileHelper()
+        fileHelper:new FileHelper(),
+        dump:dump
     };
+    //easy to debug on android phone
+    function dump(obj){
+        console.log(JSON.stringify(obj));
+    }
     function testSqlLite(){
         var db = window.sqlitePlugin.openDatabase("Database", "1.0", "Demo", -1);
         db.transaction(function (tx) {
@@ -33,10 +42,21 @@ function CommonFunc(){
             init:init,
             mkdir:mkdir,
             read:read,
-            write:write
+            write:write,
+            readDir:readDir
         };
-
         var _fs;
+        function readDir(dirPath, callback, fail){
+            _fs.root.getDirectory(dirPath, {create:false, exclusive:false}, function(dirEntry){
+                var dirReader = dirEntry.createReader();
+                dirReader.readEntries(function(dirs){
+                    callback(dirs);
+                }, fail);
+            },function(e){
+                fail(e);
+            });
+
+        }
         function fail(error){
             console.log("failed" + error.code)
         }
@@ -65,7 +85,7 @@ function CommonFunc(){
                 }, function(){
                    console.log("failed to create dir:"+dir);
                 });
-            }
+            };
             createDir(dirs.pop());
         }
         function getPath(path, callback){
@@ -122,20 +142,6 @@ function CommonFunc(){
 //cordova func
 function onDeviceReady() {
     console.log("device ready");
-    var CF = new CommonFunc();
-    CF.fileHelper.init(function(){
-            console.log("fs init");
-            CF.fileHelper.mkdir("test/test", function(entry){
-                CF.fileHelper.write("test/test/test.txt", "1234", function(){
-                    console.log("write done");
-                    CF.fileHelper.read("test/test/test.txt", function(data){
-                        console.log(data);
-                    });
-                });
-            });
-        }
-    );
-
     navigator.splashscreen.hide();
     //注册后退按钮
     document.addEventListener("backbutton", function (e) {
@@ -312,48 +318,55 @@ App.page('sqltest', function(){
     }
 });
 App.page('chart',function(){
-    var pause = false,$chart;
-    var datasets = [65,59,90,81,56,55,40,20,3,20,10,60];
-    var data = {
-        labels : ["一月","二月","三月","四月","五月","六月","七月",'八月','九月','十月','十一月','十二月'],
-        datasets : [
-            {
-                name : '体温',
-                color : "#72caed",
-                pointColor : "#95A5A6",
-                pointBorderColor : "#fff",
-                data : datasets
-            }
-        ]
-    }
-
     this.init = function(){
-        //重新设置canvas大小
-        $chart = $('#dynamic_line_canvas');
-        var wh = App.calcChartOffset();
-        $chart.attr('width',wh.width).attr('height',wh.height-30);
-        var line = new JChart.Line(data,{
-            id : 'dynamic_line_canvas'
-        });
-        line.draw();
-        refreshChart(line);
-        $('#pause_dynamic_chart').on('tap',function(){
-            pause = !pause;
-            $(this).text(pause?'继续':'暂停');
-        })
-    }
-
-    function refreshChart(chart){
-        setTimeout(function(){
-            if(!pause){
-                datasets.shift();
-                datasets.push(Math.floor(Math.random()*100));
-                chart.load(data);
+    log('chart init');
+        new J.Calendar('#calendar',{
+            onRenderDay : function(day,date){
+                return day;
+            },
+            onSelect:function(date){
+                draw_chart(date)
             }
-            refreshChart(chart);
-        },1000);
-    }
+        });
+        function draw_chart(date){
+            var dates = date.match(/(\d{4})-(\d{2})-(\d{2})/);
+            var year = dates[1];
+            var month = dates[2];
+            var day = dates[3];
+            log(year,month,day);
+            var CF = new CommonFunc();
+            var dump = CF.dump;
+            CF.fileHelper.init(function(){
+                var path = "wg/data/"+year+"/"+month+"/"+day;
+                CF.fileHelper.read(path, function(data){
+                    log(data);
+                },function(){
+                    console.log(path+":read failed");
+                });
+            });
+            var datasets = [65,59,90,81,56,55,40,20,3,20,10,60];
+            var data = {
+                labels : ["一月","二月","三月","四月","五月","六月","七月",'八月','九月','十月','十一月','十二月'],
+                datasets : [
+                    {
+                        name : '体温',
+                        color : "#72caed",
+                        pointColor : "#95A5A6",
+                        pointBorderColor : "#fff",
+                        data : datasets
+                    }
+                ]
+            };
+            //重新设置canvas大小
+            $chart = $('#dynamic_line_canvas');
+            var wh = App.calcChartOffset();
+            $chart.attr('width',wh.width).attr('height',wh.height-30);
+            var line = new JChart.Line(data,{
+                id : 'dynamic_line_canvas'
+            });
+            line.draw();
+        }
+    };
 });
-
 
 
