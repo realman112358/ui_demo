@@ -2,9 +2,12 @@
  *
  * Created by wg on 14/11/19.
  */
-var a = 1;
-function test(){
-    a = 2;
-}
-test();
-console.log(a);
+var J = {
+    a :function () {
+        console.log('a');
+    },
+    test:function (a) {
+        a();
+    }
+};
+J.test(J.a);

@@ -5,7 +5,7 @@
         </nav>
         <h1 class="title">实时图</h1>
         <nav class="right">
-            <a href="#" class="button" id="pause_dynamic_chart">暂停</a>
+            <a href="#" class="button" id="chart_choose_date">选择时间</a>
         </nav>
     </header>
     <footer>
@@ -14,11 +14,9 @@
         <a  href="#chart_month_article" data-target="article" data-icon="list" class="">月</a>
     </footer>
     <article class="active" id="chart_day_article" data-scroll="true">
+        <div class="chartTitle" id="chart_title"></div>
         <div id="calendar" style="margin:10px;"></div>
         <canvas id="dynamic_line_canvas" width="0" height="0"></canvas>
-        <div class="legend">
-            <div data-icon="stop" style="color: #72caed">体温</div>
-        </div>
     </article>
     <article class="" id="chart_month_article"  data-scroll="true">
         month

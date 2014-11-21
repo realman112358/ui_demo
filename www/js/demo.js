@@ -46,35 +46,35 @@ function CommonFunc(){
             readDir:readDir
         };
         var _fs;
-        function readDir(dirPath, callback, fail){
+        function readDir(dirPath, success, fail){
             _fs.root.getDirectory(dirPath, {create:false, exclusive:false}, function(dirEntry){
                 var dirReader = dirEntry.createReader();
                 dirReader.readEntries(function(dirs){
-                    callback(dirs);
+                    success(dirs);
                 }, fail);
             },function(e){
                 fail(e);
             });
 
         }
-        function fail(error){
+        function default_fail(error){
             console.log("failed" + error.code)
         }
-        function init(callback){
+        function init(success, fail){
             window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fs){
                _fs= fs;
                console.log("fs init");
-                callback();
+                success();
             }, fail);
         }
         //support recursive mode(mkdir 1/2/3)
-        function mkdir(dir, success){
+        function mkdir(dir, success,fail){
             var dirs =  dir.split("/").reverse();
             var root = _fs.root;
             var createDir = function(dir){
-                console.log("create dir"+dir);
+                console.log("create dir:"+dir);
                 root.getDirectory(dir, {create:true, exclusive:false}, function(entry){
-                    console.log("dir created "+entry.fullPath);
+                    console.log("dir created:"+entry.fullPath);
                     root = entry;
                     if(dirs.length>0){
                         createDir(dirs.pop());
@@ -82,60 +82,59 @@ function CommonFunc(){
                         console.log("all dir created");
                         success(entry);
                     }
-                }, function(){
-                   console.log("failed to create dir:"+dir);
-                });
+                },fail);
             };
             createDir(dirs.pop());
         }
-        function getPath(path, callback){
+        //is Write:whether to create file if not exist
+        function getPath(path, success,fail, isCreate){
+            isCreate = isCreate || false;
             console.log("enter getpath");
             var dirs = path.split("/");
             var dirHandle;
             var fileHandle;
             if(dirs.length == 1){
                 console.log("no dir file");
-                _fs.root.getFile(path, {create:true, exclusive:false}, handle_file,fail)
+                _fs.root.getFile(path, {create:isCreate, exclusive:false}, handle_file,fail)
             }else{
                 var real_dir = dirs.slice(0, dirs.length-1).join('/');
                 var real_path = dirs[dirs.length-1];
-                console.log("dir "+real_dir+" path "+real_path);
-                _fs.root.getDirectory(real_dir, {create:true, exclusive:false}, function(dir){
-                    dir.getFile(real_path, {create:true, exclusive:false}, handle_file, fail);
+                console.log("dir:"+real_dir+" path:"+real_path);
+                _fs.root.getDirectory(real_dir, {create:isCreate, exclusive:false}, function(dir){
+                    dir.getFile(real_path, {create:isCreate, exclusive:false}, handle_file, fail);
                 }, fail);
             }
             function handle_file(file_handle){
                 console.log("get file");
-                callback(file_handle);
+                success(file_handle);
             }
         }
-        function read(path, callback){
+        function read(path, success, fail){
             getPath(path, function(file){
                 file.file(function(file){
                     var reader = new FileReader();
                     console.log("create reader");
                     reader.onloadend = function (evt) {
                         console.log("read fin");
-                        callback(evt.target.result);
+                        success(evt.target.result);
                     };
                     reader.readAsText(file);
                 }, fail);
-            });
+            }, fail, false);
         }
         //default append mode
-        function write(path, data, callback){
+        function write(path, data, success, fail){
             console.log("enter write");
             getPath(path, function(file){
                 file.createWriter(function(writer){
                    writer.onwrite = function(evt){
                       console.log("write done");
-                      callback();
+                      success();
                    };
                    writer.seek();
                    writer.write(data);
                 }, fail);
-
-            });
+            }, fail, true);
         }
     }
 }
@@ -199,7 +198,6 @@ var App = (function(){
             height : $(document).height() - 44 - 30 -60,
             width : $(document).width()
         }
-
     }
     return {
         run : run,
@@ -307,63 +305,90 @@ App.page('sqltest', function(){
                             console.log(res.rows.item[i].id, res.rows.item[i].data);
                         }
                     });
-
                 });
             }, function(e){
                 console.log("error:", e.message);
             });
-
         J.tmpl($("#sqltest_data"), 'tpl_sqltest', data, 'replace');
-
     }
 });
 App.page('chart',function(){
     this.init = function(){
-    log('chart init');
-        new J.Calendar('#calendar',{
-            onRenderDay : function(day,date){
-                return day;
-            },
-            onSelect:function(date){
-                draw_chart(date)
-            }
+        log('chart init');
+        $('#chart_choose_date').tap(function(){
+            J.popup({
+                html : '<div id="popup_calendar"></div>',
+                pos : 'center',
+                backgroundOpacity : 0.4,
+                showCloseBtn : false,
+                onShow : function(){
+                    new J.Calendar('#popup_calendar',{
+                        date : new Date(),
+                        onSelect:function(date){
+                            $('#chart_title').text(date);
+                            J.closePopup();
+                            update_chart(date);
+                        }
+                    });
+                }
+            });
         });
-        function draw_chart(date){
+        function update_chart(date){
             var dates = date.match(/(\d{4})-(\d{2})-(\d{2})/);
             var year = dates[1];
             var month = dates[2];
             var day = dates[3];
             log(year,month,day);
-            var CF = new CommonFunc();
-            var dump = CF.dump;
-            CF.fileHelper.init(function(){
-                var path = "wg/data/"+year+"/"+month+"/"+day;
-                CF.fileHelper.read(path, function(data){
-                    log(data);
-                },function(){
-                    console.log(path+":read failed");
+            if(!J.isWebApp) {
+                //android 环境，读sdcard卡
+                var CF = new CommonFunc();
+                CF.fileHelper.init(function () {
+                    var path = "wg/data/" + year + "/" + month + "/" + day;
+                    CF.fileHelper.read(path, function (data) {
+                        log("file data is:"+data);
+                        //important!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        //to be continued
+                        //do something to make data to datases;
+                        var new_data = data;
+                        draw_chart_day(new_data);
+                    }, function () {
+                        log(path + ":read failed");
+                        J.showToast( 'sorry:当天没有数据', 'error');
+                    });
                 });
-            });
-            var datasets = [65,59,90,81,56,55,40,20,3,20,10,60];
-            var data = {
-                labels : ["一月","二月","三月","四月","五月","六月","七月",'八月','九月','十月','十一月','十二月'],
+            }else{
+                var datasets = [];
+                for (var i = 0; i < 24; i++) {
+                    datasets.push((Math.random() + 36).toFixed(1));
+                }
+                draw_chart_day(datasets);
+            }
+        }
+        function draw_chart_day(data){
+            var option = {
+                labels : [],
                 datasets : [
                     {
                         name : '体温',
                         color : "#72caed",
                         pointColor : "#95A5A6",
                         pointBorderColor : "#fff",
-                        data : datasets
+                        data : data
                     }
                 ]
             };
+            for(var i=0;i<24;i++){
+                option.labels.push(i.toString());
+            }
             //重新设置canvas大小
             $chart = $('#dynamic_line_canvas');
             var wh = App.calcChartOffset();
             $chart.attr('width',wh.width).attr('height',wh.height-30);
-            var line = new JChart.Line(data,{
-                id : 'dynamic_line_canvas'
-            });
+            new JChart.Line(option,{
+                id : 'dynamic_line_canvas',
+                datasetGesture : true,
+                datasetOffsetNumber : 12
+            }).draw(true);
             line.draw();
         }
     };
